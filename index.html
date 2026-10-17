@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#3ba55d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<title>매일 단어 카드</title>
+<style>
+/* Layout: one-screen card deck, storybook-playful, big touch targets for a kid */
+:root{
+  --bg:#f2f8ee; --card:#ffffff; --fg:#243329; --muted:#6b7f70;
+  --accent:#3ba55d; --accent-ink:#ffffff; --soft:#dcefd9;
+  --no:#e2574c; --yes:#3ba55d; --line:#cfe3cc;
+  --disp:'Jua',sans-serif; --body:'Noto Sans KR',sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#17211a; --card:#223026; --fg:#e8f1e9; --muted:#9db3a2;
+  --accent:#4cbf72; --accent-ink:#0e1a12; --soft:#2b3d30;
+  --no:#ef7066; --yes:#4cbf72; --line:#36493b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#17211a; --card:#223026; --fg:#e8f1e9; --muted:#9db3a2;
+  --accent:#4cbf72; --accent-ink:#0e1a12; --soft:#2b3d30;
+  --no:#ef7066; --yes:#4cbf72; --line:#36493b; color-scheme:dark }
+
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);
+  display:flex;flex-direction:column;padding-inline:16px;max-width:560px;margin-inline:auto}
+h1,h2,.disp{font-family:var(--disp);font-weight:400;letter-spacing:.01em}
+button{font-family:var(--body);cursor:pointer;border:none;border-radius:16px;font-size:16px}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.screen{display:flex;flex-direction:column;gap:16px;padding-block:18px;flex:1;min-height:0}
+[hidden]{display:none!important}
+
+/* home */
+.logo{font-size:34px;margin:4px 0 0;text-wrap:balance}
+.sub{color:var(--muted);margin:0;font-size:14px}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.panel h2{margin:0;font-size:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 14px;border-radius:999px;background:var(--soft);color:var(--fg);font-size:15px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.start{margin-top:auto;background:var(--accent);color:var(--accent-ink);font-size:20px;
+  padding:16px;border-radius:20px;font-family:var(--disp)}
+.streak{font-size:13px;color:var(--muted);text-align:center}
+
+/* study */
+.top{display:flex;align-items:center;gap:10px}
+.top .home{background:var(--soft);color:var(--fg);padding:8px 12px;border-radius:12px;font-size:14px}
+.bar{flex:1;height:10px;background:var(--soft);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .25s}
+.count{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);min-width:52px;text-align:right}
+
+.cardwrap{flex:1;min-height:0;display:flex;perspective:1200px}
+.card{position:relative;flex:1;border-radius:26px;transform-style:preserve-3d;transition:transform .45s;
+  min-height:0;touch-action:pan-y}
+.card.flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;background:var(--card);
+  border:2px solid var(--line);border-radius:26px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;padding:22px;text-align:center;overflow:auto}
+.face.back{transform:rotateY(180deg);background:var(--soft)}
+.unit-tag{position:absolute;top:14px;left:16px;font-size:12px;color:var(--muted);
+  background:var(--bg);padding:4px 10px;border-radius:999px}
+.word{font-family:var(--disp);font-size:clamp(34px,9vw,52px);margin:0;text-wrap:balance}
+.defi{font-size:16px;color:var(--muted);max-width:30ch;line-height:1.55;margin:0}
+.ko{font-family:var(--disp);font-size:clamp(28px,8vw,44px);color:var(--accent);margin:0;text-wrap:balance}
+.ex{font-size:16px;line-height:1.6;margin:0;max-width:32ch;font-style:italic;
+  border-top:1.5px dashed var(--line);padding-top:12px}
+.ex b{font-style:normal;color:var(--accent)}
+.exbtn{background:var(--soft);color:var(--fg);padding:8px 14px;border-radius:999px;font-size:14px}
+.hint{font-size:13px;color:var(--muted)}
+.speak{position:absolute;top:12px;right:14px;background:var(--accent);color:var(--accent-ink);
+  border-radius:999px;width:44px;height:44px;font-size:20px;display:flex;align-items:center;justify-content:center}
+@media (prefers-reduced-motion: reduce){ .card{transition:none} .bar i{transition:none} }
+
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.actions button{padding:18px 10px;font-size:19px;border-radius:18px;color:#fff;font-family:var(--disp)}
+.btn-no{background:var(--no)} .btn-yes{background:var(--yes);color:var(--accent-ink)}
+.navrow{display:flex;justify-content:space-between;gap:10px}
+.navrow button{background:none;color:var(--muted);font-size:14px;padding:6px 10px}
+
+/* game */
+.q-sent{font-size:20px;line-height:1.7;margin:0;max-width:34ch;text-align:center}
+.q-sent b{color:var(--accent);letter-spacing:.06em}
+.q-ko{font-size:15px;color:var(--muted);margin:0;text-align:center}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts button{background:var(--card);border:2px solid var(--line);color:var(--fg);
+  padding:16px 8px;font-size:18px;font-family:var(--disp);border-radius:16px}
+.opts button.ok{background:var(--yes);border-color:var(--yes);color:var(--accent-ink)}
+.opts button.bad{background:var(--no);border-color:var(--no);color:#fff;opacity:.75}
+.opts button:disabled{cursor:default}
+.gamebox{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;background:var(--card);border:2px solid var(--line);
+  border-radius:26px;padding:22px;overflow:auto}
+
+/* result */
+.big{font-size:44px;text-align:center;margin:10px 0 0}
+.score{text-align:center;font-size:18px;margin:0}
+.misslist{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0}
+.miss{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;
+  display:flex;justify-content:space-between;gap:10px;font-size:15px;align-items:baseline}
+.miss b{font-family:var(--disp);font-weight:400;font-size:18px}
+.miss span{color:var(--accent)}
+.resbtns{display:flex;flex-direction:column;gap:10px}
+.ghost{background:var(--soft);color:var(--fg);padding:14px;border-radius:16px;font-size:17px}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+
+<!-- HOME -->
+<section id="home" class="screen">
+  <h1 class="logo">🐸 매일 단어 카드</h1>
+  <p class="sub">카드를 톡! 누르면 한국어 뜻이 나와요. 하루 한 세트씩 복습해요.</p>
+  <div class="panel">
+    <h2>어떤 단어를 볼까?</h2>
+    <div class="chips" id="unitChips"></div>
+  </div>
+  <div class="panel">
+    <h2>어떻게 볼까?</h2>
+    <div class="chips" id="modeChips">
+      <button class="chip" data-mode="en" aria-pressed="true">영어 → 뜻 맞히기</button>
+      <button class="chip" data-mode="ko" aria-pressed="false">한국어 → 영어 맞히기</button>
+      <button class="chip" data-mode="def" aria-pressed="false">영어 정의 → 단어 맞히기</button>
+      <button class="chip" data-mode="game" aria-pressed="false">🎮 빈칸 채우기 게임</button>
+    </div>
+  </div>
+  <p class="streak" id="streak"></p>
+  <button class="start" id="startBtn">시작하기 ▶</button>
+  <button class="ghost" id="reviewBtn" hidden>⭐ 어려웠던 단어만 다시 보기</button>
+</section>
+
+<!-- STUDY -->
+<section id="study" class="screen" hidden>
+  <div class="top">
+    <button class="home" id="quitBtn">← 처음으로</button>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="count" id="count">1/24</div>
+  </div>
+  <div class="cardwrap">
+    <div class="card" id="card" role="button" tabindex="0" aria-label="카드 뒤집기">
+      <div class="face front">
+        <span class="unit-tag" id="tagF"></span>
+        <button class="speak" id="speakF" aria-label="소리로 듣기">🔊</button>
+        <p class="word" id="frontMain"></p>
+        <p class="defi" id="frontSub"></p>
+        <p class="hint">👆 카드를 누르면 정답이 보여요</p>
+      </div>
+      <div class="face back">
+        <span class="unit-tag" id="tagB"></span>
+        <button class="speak" id="speakB" aria-label="소리로 듣기">🔊</button>
+        <p class="word" id="backWord"></p>
+        <p class="defi" id="backDef"></p>
+        <p class="ko" id="backKo"></p>
+        <p class="ex" id="backEx" hidden></p>
+        <button class="exbtn" id="exBtn" hidden>▶ 예문 듣기</button>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn-no" id="noBtn">🤔 아직 어려워</button>
+    <button class="btn-yes" id="yesBtn">😄 알아요!</button>
+  </div>
+  <div class="navrow">
+    <button id="prevBtn">← 이전 카드</button>
+    <button id="skipBtn">건너뛰기 →</button>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen" hidden>
+  <div class="top">
+    <button class="home" id="gQuitBtn">← 처음으로</button>
+    <div class="bar"><i id="gBarFill"></i></div>
+    <div class="count" id="gCount">1/24</div>
+  </div>
+  <div class="gamebox">
+    <p class="q-ko" id="gKo"></p>
+    <p class="q-sent" id="gSent"></p>
+    <button class="exbtn" id="gSpeak">🔊 문장 듣기</button>
+  </div>
+  <div class="opts" id="gOpts"></div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="screen" hidden>
+  <p class="big disp" id="resEmoji">🎉</p>
+  <p class="score" id="resScore"></p>
+  <h2 class="disp" id="missTitle" style="margin:4px 0 0">다시 볼 단어</h2>
+  <div class="misslist" id="missList"></div>
+  <div class="resbtns">
+    <button class="start" id="againMissBtn">🤔 어려웠던 것만 다시</button>
+    <button class="ghost" id="againAllBtn">전체 다시 하기</button>
+    <button class="ghost" id="toHomeBtn">처음으로</button>
+  </div>
+</section>
+
+<script>
+const WORDS = [
+ // Unit 1 — 청개구리 이야기 (The Tale of the Green Frog)
+ ["naughty","behaving badly and not doing what someone is told","말을 안 듣는, 버릇없는",1],
+ ["obey","to do what someone tells them to do","(말을) 따르다, 순종하다",1],
+ ["opposite","completely different from something else","정반대의",1],
+ ["sigh","the act of breathing out loudly when someone is sad or worried","한숨(을 쉬다)",1],
+ ["scared","feeling afraid or frightened","무서워하는, 겁먹은",1],
+ ["manage","to do something difficult","(어려운 일을) 해내다",1],
+ ["warn","to tell someone about a danger","경고하다",1],
+ ["ignore","to not listen or pay attention to someone","무시하다",1],
+ ["appear","to come into view or show up suddenly","나타나다",1],
+ ["storm","to move somewhere quickly in an angry way","화가 나서 뛰쳐나가다",1],
+ ["slam","to close something very hard and loudly","(문을) 쾅 닫다",1],
+ ["bury","to put something into the ground and cover it with dirt","묻다, 매장하다",1],
+ ["bush","a short plant with many branches","덤불, 관목",1],
+ ["jaw","the hard part of the head that opens and closes the mouth","턱",1],
+ ["snap","to close quickly with a sharp sound; to say something angrily","딱 물다; 쏘아붙이다",1],
+ ["breathe","to take air in and out of one's body","숨 쉬다",1],
+ ["nervous","feeling worried and afraid about something","긴장한, 불안한",1],
+ ["grave","a place in the ground where a dead person is buried","무덤",1],
+ ["panic","to feel very afraid and not know what to do","당황하다, 공황에 빠지다",1],
+ ["terrified","feeling very afraid or scared","몹시 무서워하는",1],
+ ["yell back","to shout an answer in an angry way","소리쳐 말대꾸하다",1],
+ ["grief","a feeling of very deep sadness","깊은 슬픔, 비탄",1],
+ ["regret","a feeling of sadness about doing something wrong","후회",1],
+ ["croak","to make a deep sound like a frog","(개구리가) 개굴개굴 울다",1],
+ // Unit 2 — 빨간 부채 파란 부채
+ ["barely","almost not; only just enough","거의 ~않다, 간신히",2],
+ ["gather","to bring things together in one place","모으다",2],
+ ["sweat","water that comes out of one's skin when someone is hot","땀",2],
+ ["weight","how heavy something or someone is","무게",2],
+ ["faint","to suddenly fall down because of shock or weakness","기절하다",2],
+ ["believe","to think that something is true","믿다",2],
+ ["shade","a dark, cool place away from the sun","그늘",2],
+ ["strange","different from what is usual or normal","이상한, 낯선",2],
+ ["amazing","very surprising in a good way","놀라운, 굉장한",2],
+ ["overnight","happening in one night or very quickly","하룻밤 사이에",2],
+ ["comfortable","feeling good and relaxed without any pain","편안한",2],
+ ["curious","wanting to know more about something","호기심 많은, 궁금한",2],
+ ["shrink","to become smaller in size","줄어들다, 작아지다",2],
+ ["return","to go back to a place or state","돌아가다",2],
+ ["normal","usual; not strange","보통의, 평범한",2],
+ ["reach","to arrive at a place","도착하다, 이르다",2],
+ ["palace","a large, beautiful house where a king or queen lives","궁전",2],
+ ["pillar","a tall post that holds up a roof","기둥",2],
+ ["nap","a short sleep during the day","낮잠",2],
+ ["porch","a covered area at the entrance of a house","현관, 포치",2],
+ ["snore","to make a loud sound through the nose when someone sleeps","코를 골다",2],
+ ["servant","a person who works in someone else's house","하인, 종",2],
+ ["whisper","to speak very quietly so others can barely hear","속삭이다",2],
+ ["trouble","problems or difficulties that cause worry","문제, 골칫거리",2],
+ // Unit 3 — 손톱 먹은 쥐 (예문: 책 본문)
+ ["doze","to sleep lightly for a short time","꾸벅꾸벅 졸다",3,"Whenever he opened a book, he would start to doze off."],
+ ["messy","not clean or tidy","지저분한, 엉망인",3,"His room was always messy."],
+ ["temple","a place where people go to pray","절, 사원",3,"They sent him to a temple deep in the mountains."],
+ ["monk","a person who lives in a temple and prays","스님, 수도승",3,"At the temple, there was a wise and kind monk."],
+ ["fingernail","the hard part at the end of one's finger","손톱",3,"One day, the young man cut his fingernails."],
+ ["bush","a short plant with many branches","덤불, 관목",3,"He tossed them out the window into the bushes."],
+ ["toss","to throw something lightly","가볍게 던지다",3,"Then, he tossed them out the window into the bushes."],
+ ["nibble","to eat something by taking small bites","조금씩 갉아먹다",3,"The mouse found the nails and nibbled them up."],
+ ["immediately","right away; without waiting","즉시, 바로",3,"You must leave the temple immediately."],
+ ["mole","a small, dark spot on the skin","점",3,"The man had his eyes, nose, and mouth—even the same mole on his neck!"],
+ ["stranger","a person someone does not know","낯선 사람",3,"“I am the son of this family,” the stranger replied."],
+ ["disbelief","a feeling of not believing something is true","믿기지 않음, 불신",3,"In disbelief, the young man cried out, “Mother! Father! It's me!”"],
+ ["pretend","to act like something is true when it is not","~인 척하다",3,"How dare you pretend to be him? Leave this house now!"],
+ ["terrible","very bad or unpleasant","끔찍한, 지독한",3,"Sir! Sir! Something terrible has happened!"],
+ ["gasp","to breathe in suddenly because someone is surprised","숨을 헉 들이쉬다",3,"The young man gasped. “Then... what should I do?”"],
+ ["fear","to be afraid; a feeling of being afraid","두려움; 두려워하다",3,"Cats are what mice fear the most."],
+ ["proof","something that shows a fact is true","증거",3,"I brought proof that I am the real son!"],
+ ["fake","not real; made to look like something else","가짜의",3,"The fake son laughed at him."],
+ ["pale","having very light skin because of fear or shock","(얼굴이) 창백한",3,"But as soon as he saw the cat, his face turned pale."],
+ ["hiss","to make a long 's' sound like a cat","쉭쉭거리다",3,"“Hisssss!” The cat sprang up like lightning."],
+ ["spring","to jump up suddenly and quickly","휙 뛰어오르다",3,"The cat sprang up like lightning and attacked the fake son!"],
+ ["lightning","a bright flash of light in the sky during a storm","번개",3,"The cat sprang up like lightning and attacked the fake son!"],
+ ["attack","to try to hurt someone or something","공격하다",3,"The cat sprang up like lightning and attacked the fake son!"],
+ ["shrink","to become smaller in size","줄어들다, 작아지다",3,"The fake son screamed loudly and started shrinking."],
+ // Unit 4 — 반쪽이 (예문: 책 본문)
+ ["shrine","a special place where people go to pray","사당, 신당",4,"The wife went to the shrine every day and prayed with all her heart."],
+ ["bless","to give good things or help from a god or heaven","축복하다",4,"Hear our prayer, and bless us with a child."],
+ ["carp","a type of large fish that lives in ponds and rivers","잉어",4,"There are three carp in the village well."],
+ ["snatch","to take something quickly","낚아채다, 잡아채다",4,"Suddenly, a cat ran over and snatched one of the carp!"],
+ ["chase","to run after someone or something to catch them","뒤쫓다",4,"She chased the cat, but the cat had already eaten half the carp."],
+ ["ashamed","feeling bad or upset about something","부끄러운, 창피한",4,"Even his brothers were ashamed of him and stayed away."],
+ ["frightening","making someone feel very afraid","무서운, 겁나게 하는",4,"One day, something frightening happened in the village."],
+ ["governor","a person who is the leader of a town or area","사또, 원님",4,"The village governor said, “Whoever catches the tiger will receive a big reward!”"],
+ ["beg","to ask for something that someone wants or needs very much","간청하다, 빌다",4,"His parents begged him not to go, but Half-Boy made up his mind."],
+ ["march","to walk with strong, steady steps","씩씩하게 걷다, 행진하다",4,"He marched into the deep forest."],
+ ["fur","the hair that covers an animal's body","털, 모피",4,"Why is there so much yellow fur on the floor?"],
+ ["decide","to choose something after thinking about it","결정하다",4,"He felt something was wrong and decided to sleep under the porch instead."],
+ ["porch","a covered area at the entrance of a house","현관, 마루",4,"Half-Boy jumped out from under the porch."],
+ ["trick","to fool someone to make them do something","속이다",4,"My brothers must have been tricked the same way!"],
+ ["growl","to make a low, angry sound like an animal","으르렁거리다",4,"“Hey, Tiger! Give my brothers back!” The Tiger growled."],
+ ["sesame oil","a type of oil made from seeds used for cooking","참기름",4,"I ate the handsome one with sesame oil, and the tall one with chili paste!"],
+ ["dodge","to move quickly to avoid something","재빨리 피하다",4,"Because he only had half a body, Half-Boy dodged the Tiger quickly."],
+ ["pillar","a tall post that holds up a roof","기둥",4,"The Tiger banged his head hard against the wooden pillar behind Half-Boy."],
+ ["jaw","the hard part of the head that opens and closes the mouth","턱",4,"He jumped up on one leg and kicked the Tiger's jaw hard."],
+ ["half-bodied","having only half of a normal body","반쪽 몸의, 반쪽이",4,"Ugh! I cannot believe it... I lost to a half-bodied boy!"],
+ ["stumble","to almost fall while walking","비틀거리다",4,"The Tiger stumbled and fell into the yard."],
+ ["courage","the feeling of being brave and not afraid","용기",4,"Your body may be half the size of others, but your courage is greater than anyone's."],
+ ["yearly","happening once every year","해마다 하는, 매년의",4,"He held a yearly memorial for his brothers."],
+ ["memorial","a special event to remember someone who died","제사, 추모 행사",4,"He held a yearly memorial for his brothers and helped the poor in the village."],
+ // Unit 5 — 개와 고양이 (예문: 책 본문)
+ ["carp","a type of large fish that lives in ponds and rivers","잉어",5,"One day, the old woman saw a carp stuck in a fisherman's net by the river."],
+ ["stuck","not able to move from a place","움직일 수 없는, 갇힌",5,"The old woman saw a carp stuck in a fisherman's net."],
+ ["teary","having tears in the eyes","눈물이 글썽한",5,"The carp looked at her with teary eyes."],
+ ["release","to let something or someone go free","놓아주다, 풀어주다",5,"She gently released the carp back into the river."],
+ ["repay","to give something back to say thank you","보답하다, 은혜를 갚다",5,"I wish to repay you for saving my life."],
+ ["straw hut","a small house made of dried grass","초가집",5,"Her straw hut turned into a fine house with a tile roof."],
+ ["spread","to reach more and more people or places","퍼지다, 퍼뜨리다",5,"Soon, news of the crystal ball spread everywhere."],
+ ["greedy","wanting too much food or money and not sharing","욕심 많은",5,"A greedy old woman in a nearby village heard it too."],
+ ["gladly","in a happy and willing way","기꺼이, 흔쾌히",5,"The kind old woman gladly showed it to her."],
+ ["pretend","to act like something is true when it is not","~인 척하다",5,"While pretending to admire it, the greedy old woman quickly swapped it with the fake one."],
+ ["admire","to look at something or someone with pleasure or respect","감탄하며 바라보다",5,"While pretending to admire it, the greedy old woman quickly swapped it with the fake one."],
+ ["swap","to give something and get something else","바꿔치기하다, 맞바꾸다",5,"The greedy old woman quickly swapped it with the fake one."],
+ ["serve","to give food or drink to someone","(음식을) 대접하다",5,"She served food and treated her guest well."],
+ ["treat","to act toward someone in a particular way","대하다, 대접하다",5,"She served food and treated her guest well."],
+ ["disappear","to go away so something cannot be seen anymore","사라지다",5,"The fine house disappeared, and the old straw hut was back in its place."],
+ ["sneak","to move quietly so no one sees or hears them","살금살금 들어가다",5,"The Cat sneaked into the barn and grabbed the leader of the mice."],
+ ["barn","a building on a farm where animals are kept","헛간, 곳간",5,"The Cat sneaked into the barn and grabbed the leader of the mice."],
+ ["terrified","feeling very afraid or scared","몹시 무서워하는",5,"The mice were terrified. They searched everywhere."],
+ ["annoyed","feeling a little angry or bothered","짜증이 난",5,"The Cat got annoyed and shouted, “How can I answer with the crystal in my mouth—Oh no!”"],
+ ["float","to move lightly in the water or air","(물에) 뜨다, 떠다니다",5,"Then, she found a dead fish floating in the water."],
+ ["bite","to cut into something with one's teeth","물다, 깨물다",5,"She bit into the fish, and suddenly, the crystal ball popped out!"],
+ ["raise","to take care of something or someone so they grow well","기르다, 키우다",5,"The old woman raised the Cat indoors with great care."],
+ ["growl","to make a low, angry sound like an animal","으르렁거리다",5,"Whenever the Dog saw the Cat, he would growl."],
+ ["hiss","to make a long 's' sound like a cat","하악거리다, 쉭쉭거리다",5,"And whenever the Cat saw the Dog, she would hiss."],
+];
+const UNITS = {1:"청개구리 이야기", 2:"빨간 부채 파란 부채", 3:"손톱 먹은 쥐", 4:"반쪽이", 5:"개와 고양이"};
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} }
+};
+
+let selUnit = 0;           // 0 = 전체
+let mode = "en";
+let deck = [], idx = 0, misses = [], flipped = false;
+
+/* ---------- home ---------- */
+function buildChips(){
+  const wrap = $("unitChips");
+  const mk = (label, val)=>{
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = label;
+    b.setAttribute("aria-pressed", String(val===selUnit));
+    b.onclick = ()=>{ selUnit = val; [...wrap.children].forEach(c=>c.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true"); };
+    wrap.appendChild(b);
+  };
+  mk("전체 ("+WORDS.length+")", 0);
+  for(const u of Object.keys(UNITS).map(Number)) mk(UNITS[u]+" ("+WORDS.filter(w=>w[3]===u).length+")", u);
+
+  $("modeChips").querySelectorAll(".chip").forEach(b=>{
+    b.onclick = ()=>{ mode = b.dataset.mode;
+      $("modeChips").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); };
+  });
+}
+function refreshHome(){
+  const s = store.get("streak") || {days:0,last:""};
+  $("streak").textContent = s.days>0 ? `🔥 ${s.days}일 연속 공부 중!` : "오늘부터 시작해 볼까요?";
+  const hard = store.get("hard") || [];
+  $("reviewBtn").hidden = hard.length===0;
+  if(hard.length) $("reviewBtn").textContent = `⭐ 어려웠던 단어만 다시 보기 (${hard.length}개)`;
+}
+function markToday(){
+  const today = new Date().toISOString().slice(0,10);
+  const s = store.get("streak") || {days:0,last:""};
+  if(s.last===today) return;
+  const y = new Date(Date.now()-864e5).toISOString().slice(0,10);
+  s.days = (s.last===y) ? s.days+1 : 1;
+  s.last = today; store.set("streak", s);
+}
+
+/* ---------- study ---------- */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+function startDeck(cards){
+  if(mode==="game"){
+    const withEx = cards.filter(c=>c[4]);
+    if(!withEx.length){
+      $("streak").textContent = "이 세트에는 아직 예문이 없어요. 예문이 있는 세트를 골라 주세요!";
+      return;
+    }
+    deck = shuffle(withEx.slice()); idx = 0; misses = [];
+    $("home").hidden = true; $("result").hidden = true; $("game").hidden = false;
+    showQuestion();
+    return;
+  }
+  deck = shuffle(cards.slice()); idx = 0; misses = [];
+  $("home").hidden = true; $("result").hidden = true; $("study").hidden = false;
+  showCard();
+}
+
+/* ---------- 빈칸 채우기 게임 ---------- */
+const IRREG = { spring:["sprang","sprung"], bite:["bit"] };  // 예문 속 불규칙 변화형
+let gWrong = false;
+function wordForm(en, ex){
+  const stems = [en, ...(IRREG[en]||[])];
+  for(const s of stems){
+    const re = new RegExp("\\b("+s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\w*)","i");
+    const m = ex.match(re);
+    if(m) return m[1];
+  }
+  return null;
+}
+function showQuestion(){
+  gWrong = false;
+  const [en, , ko, , ex] = deck[idx];
+  const form = wordForm(en, ex);
+  const blank = "＿".repeat(Math.max(4, Math.min(8, en.length)));
+  $("gSent").textContent = form ? ex.replace(form, blank) : ex;
+  $("gKo").textContent = ko;
+  $("gCount").textContent = (idx+1)+"/"+deck.length;
+  $("gBarFill").style.width = (idx/deck.length*100)+"%";
+  // 보기: 정답 + 같은 덱에서 오답 3개
+  const others = shuffle(deck.filter(d=>d[0]!==en)).slice(0,3).map(d=>d[0]);
+  const opts = shuffle([en, ...others]);
+  const wrap = $("gOpts"); wrap.innerHTML = "";
+  for(const o of opts){
+    const b = document.createElement("button");
+    b.textContent = o;
+    b.onclick = ()=>{
+      if(o===en){
+        b.classList.add("ok");
+        [...wrap.children].forEach(c=>c.disabled=true);
+        if(gWrong) misses.push(deck[idx]);
+        // 빈칸을 정답으로 채워서 보여주고 문장 읽기
+        $("gSent").textContent = "";
+        const filled = form ? ex.split(form) : [ex];
+        if(form){
+          $("gSent").appendChild(document.createTextNode(filled[0]));
+          const bb = document.createElement("b"); bb.textContent = form;
+          $("gSent").appendChild(bb);
+          $("gSent").appendChild(document.createTextNode(filled.slice(1).join(form)));
+        } else $("gSent").textContent = ex;
+        speak(ex, "en-US");
+        setTimeout(()=>{ if(idx<deck.length-1){ idx++; showQuestion(); } else finish(); }, 1600);
+      } else {
+        gWrong = true;
+        b.classList.add("bad"); b.disabled = true;
+      }
+    };
+    wrap.appendChild(b);
+  }
+}
+function speakFront(){
+  const [en, def, ko] = deck[idx];
+  if(mode==="ko") speak(ko, "ko-KR");
+  else if(mode==="def") speak(def, "en-US");
+  else speak(en, "en-US");
+}
+function speakSeq(parts){                          // [텍스트, 언어] 순서대로 이어 읽기
+  try{
+    if(!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    for(const [text, lang] of parts){
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang; u.rate = 0.85;
+      const v = speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith(lang));
+      if(v) u.voice = v;
+      speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
+function speakBack(){
+  const [en,,ko,,ex] = deck[idx];
+  const parts = [[en,"en-US"],[ko.replace(/[()~;,]/g," "),"ko-KR"]];
+  if(ex) parts.push([ex,"en-US"]);
+  speakSeq(parts);
+}
+function showCard(){
+  flipped = false; $("card").classList.remove("flip");
+  const [en, def, ko, u, ex] = deck[idx];
+  $("tagF").textContent = $("tagB").textContent = UNITS[u];
+  const exEl = $("backEx");
+  exEl.hidden = $("exBtn").hidden = !ex;
+  if(ex){
+    exEl.innerHTML = "";
+    // 예문 속 표제어를 강조 표시
+    const re = new RegExp("("+en.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\w*)","i");
+    const parts = ex.split(re);
+    for(const p of parts){
+      if(re.test(p) && p.toLowerCase().startsWith(en.split(" ")[0].toLowerCase())){
+        const b = document.createElement("b"); b.textContent = p; exEl.appendChild(b);
+      } else exEl.appendChild(document.createTextNode(p));
+    }
+  }
+  if(mode==="en"){ $("frontMain").textContent = en; $("frontSub").textContent = def; }
+  else if(mode==="ko"){ $("frontMain").textContent = ko; $("frontSub").textContent = ""; }
+  else { $("frontMain").textContent = "❓"; $("frontSub").textContent = def; }
+  $("backWord").textContent = en; $("backDef").textContent = def; $("backKo").textContent = ko;
+  $("count").textContent = (idx+1)+"/"+deck.length;
+  $("barFill").style.width = (idx/deck.length*100)+"%";
+  speakFront();                                   // 카드가 열리면 바로 읽어주기
+}
+function answer(known){
+  if(!known) misses.push(deck[idx]);
+  next();
+}
+function next(){
+  if(idx < deck.length-1){ idx++; showCard(); } else finish();
+}
+function prev(){ if(idx>0){ idx--; showCard(); } }
+
+function finish(){
+  markToday();
+  $("barFill").style.width = "100%";
+  $("study").hidden = true; $("game").hidden = true; $("result").hidden = false;
+  const ok = deck.length - misses.length;
+  $("resEmoji").textContent = misses.length===0 ? "🏆" : (ok/deck.length>=0.7 ? "🎉" : "💪");
+  $("resScore").textContent = `${deck.length}개 중 ${ok}개 알았어요!`;
+  const list = $("missList"); list.innerHTML = "";
+  $("missTitle").hidden = $("againMissBtn").hidden = misses.length===0;
+  for(const [en,def,ko] of misses){
+    const d = document.createElement("div"); d.className="miss";
+    d.innerHTML = `<b></b><span></span>`;
+    d.querySelector("b").textContent = en; d.querySelector("span").textContent = ko;
+    list.appendChild(d);
+  }
+  // 어려운 단어 저장(기기별): 이번에 틀린 단어 목록으로 갱신
+  const prevHard = store.get("hard") || [];
+  const merged = [...prevHard.filter(h=>!deck.some(d0=>d0[0]===h[0]&&d0[3]===h[3])), ...misses];
+  store.set("hard", merged);
+  refreshHome();
+}
+
+/* ---------- events ---------- */
+buildChips(); refreshHome();
+
+$("startBtn").onclick = ()=>{
+  const cards = selUnit===0 ? WORDS : WORDS.filter(w=>w[3]===selUnit);
+  startDeck(cards);
+};
+$("reviewBtn").onclick = ()=>{ const h = store.get("hard")||[]; if(h.length) startDeck(h); };
+$("quitBtn").onclick = $("gQuitBtn").onclick = $("toHomeBtn").onclick = ()=>{ $("study").hidden=true; $("game").hidden=true; $("result").hidden=true; $("home").hidden=false; refreshHome(); };
+$("gSpeak").onclick = ()=>{ const ex = deck[idx][4]; if(ex) speak(ex, "en-US"); };
+$("againMissBtn").onclick = ()=>{ if(misses.length) startDeck(misses); };
+$("againAllBtn").onclick = ()=>startDeck(deck);
+$("noBtn").onclick = ()=>answer(false);
+$("yesBtn").onclick = ()=>answer(true);
+$("prevBtn").onclick = prev;
+$("skipBtn").onclick = next;
+
+const card = $("card");
+const flip = ()=>{
+  flipped=!flipped; card.classList.toggle("flip", flipped);
+  if(flipped) speakBack();                        // 뒤집으면 단어 + 예문 자동 읽기
+  else speakFront();
+};
+card.onclick = flip;
+card.onkeydown = e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); flip(); } };
+
+// 발음 듣기 (Web Speech API)
+function speak(text, lang){
+  try{
+    if(!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang; u.rate = 0.85;
+    const v = speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith(lang));
+    if(v) u.voice = v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+if("speechSynthesis" in window) speechSynthesis.getVoices(); // iOS 음성 목록 미리 로드
+$("speakF").onclick = e=>{
+  e.stopPropagation();
+  const [en,def,,/*u*/] = deck[idx];
+  if(mode==="ko") speak(deck[idx][2], "ko-KR");
+  else if(mode==="def") speak(def, "en-US");
+  else speak(en, "en-US");
+};
+$("speakB").onclick = e=>{ e.stopPropagation(); speak(deck[idx][0], "en-US"); };
+$("exBtn").onclick = e=>{
+  e.stopPropagation();
+  const ex = deck[idx][4];
+  if(ex) speak(ex, "en-US");
+};
+
+// swipe left/right to move between cards
+let sx=null;
+card.addEventListener("touchstart", e=>{ sx = e.touches[0].clientX; }, {passive:true});
+card.addEventListener("touchend", e=>{
+  if(sx===null) return;
+  const dx = e.changedTouches[0].clientX - sx; sx=null;
+  if(dx < -60) next(); else if(dx > 60) prev();
+}, {passive:true});
+</script>
+
+</body>
+</html>
