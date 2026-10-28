@@ -327,30 +327,30 @@ const WORDS = [
  ["growl","to make a low, angry sound like an animal","으르렁거리다",5,"Whenever the Dog saw the Cat, he would growl."],
  ["hiss","to make a long 's' sound like a cat","하악거리다, 쉭쉭거리다",5,"And whenever the Cat saw the Dog, she would hiss."],
  // Unit 6 — 요술 맷돌 (The Magic Millstone)
- ["wealth","a lot of money and expensive things","부, 재산",6],
- ["satisfied","feeling happy with what someone has","만족한",6],
- ["freezing","very, very cold","몹시 추운",6],
- ["unsteadily","in a shaky way without balance","비틀비틀, 불안정하게",6],
- ["terribly","very much or very badly","몹시, 지독하게",6],
- ["desperate","feeling that someone needs help very much and has no hope","절박한, 간절한",6],
- ["frown","to make an angry or unhappy face","얼굴을 찌푸리다",6],
- ["bother","to annoy or make trouble for someone","귀찮게 하다, 괴롭히다",6],
- ["shut","closed; not open","닫힌",6],
- ["humble","small and simple; not rich","소박한, 초라한",6],
- ["meal","food that someone eats at one time","식사, 끼니",6],
- ["millstone","a heavy, large stone used for grinding grain","맷돌",6],
- ["vanish","to disappear suddenly","갑자기 사라지다",6],
- ["share","to give part of something to someone else","나누다, 나눠 주다",6],
- ["neighbor","a person who lives near someone","이웃",6],
- ["jealous","feeling unhappy because someone wants something that someone else has","질투하는, 샘내는",6],
- ["secretly","in a hidden way that others do not know","몰래, 비밀리에",6],
- ["sneak","to move quietly so no one sees or hears them","살금살금 움직이다",6],
- ["steal","to take something that is not one's own","훔치다",6],
- ["port","a place by the water where boats stop","항구",6],
- ["sail","to travel on water in a boat","항해하다",6],
- ["sink","to go down under water","가라앉다",6],
- ["endlessly","without stopping; again and again forever","끝없이, 계속해서",6],
- ["salty","tasting like salt","짠, 짭짤한",6],
+ ["wealth","a lot of money and expensive things","부, 재산",6,"The rich man had more wealth than he would ever need, but he was never satisfied."],
+ ["satisfied","feeling happy with what someone has","만족한",6,"The rich man had more wealth than he would ever need, but he was never satisfied."],
+ ["freezing","very, very cold","몹시 추운",6,"One freezing winter night, the poor man was walking home with just one bowl of rice."],
+ ["unsteadily","in a shaky way without balance","비틀비틀, 불안정하게",6,"On the road, he saw an old man walking unsteadily."],
+ ["terribly","very much or very badly","몹시, 지독하게",6,"I'm just a traveler passing by, but I'm very cold and terribly hungry."],
+ ["desperate","feeling that someone needs help very much and has no hope","절박한, 간절한",6,"The old man was desperate, but the rich man frowned."],
+ ["frown","to make an angry or unhappy face","얼굴을 찌푸리다",6,"The rich man frowned and said, “Go away! Stop bothering me!”"],
+ ["bother","to annoy or make trouble for someone","귀찮게 하다, 괴롭히다",6,"“Go away! Stop bothering me!” And he slammed the door shut."],
+ ["shut","closed; not open","닫힌",6,"And he slammed the door shut."],
+ ["humble","small and simple; not rich","소박한, 초라한",6,"He helped the old man up and brought him to his humble home."],
+ ["meal","food that someone eats at one time","식사, 끼니",6,"The old man ate the meal in a hurry."],
+ ["millstone","a heavy, large stone used for grinding grain","맷돌",6,"He reached into his bag and pulled out an old millstone. “This is a magic millstone.”"],
+ ["vanish","to disappear suddenly","갑자기 사라지다",6,"Then, the old man suddenly vanished like smoke."],
+ ["share","to give part of something to someone else","나누다, 나눠 주다",6,"He shared the food and clothes with neighbors in need."],
+ ["neighbor","a person who lives near someone","이웃",6,"He shared the food and clothes with neighbors in need."],
+ ["jealous","feeling unhappy because someone wants something that someone else has","질투하는, 샘내는",6,"When the greedy rich man heard the story, he got jealous."],
+ ["secretly","in a hidden way that others do not know","몰래, 비밀리에",6,"The rich man thought secretly, I must have that millstone!"],
+ ["sneak","to move quietly so no one sees or hears them","살금살금 움직이다",6,"That night, the rich man sneaked into the kind man's house."],
+ ["steal","to take something that is not one's own","훔치다",6,"He stole the millstone and ran away."],
+ ["port","a place by the water where boats stop","항구",6,"He ran straight to the port, jumped on a boat, and sailed out to sea."],
+ ["sail","to travel on water in a boat","항해하다",6,"He ran straight to the port, jumped on a boat, and sailed out to sea."],
+ ["sink","to go down under water","가라앉다",6,"The boat soon filled up with salt. It grew too heavy and began to sink."],
+ ["endlessly","without stopping; again and again forever","끝없이, 계속해서",6,"But the millstone kept spinning, and salt poured out endlessly."],
+ ["salty","tasting like salt","짠, 짭짤한",6,"People say the magic millstone still spins on the ocean floor. That is why the sea is salty even today."],
 ];
 const UNITS = {1:"청개구리 이야기", 2:"빨간 부채 파란 부채", 3:"손톱 먹은 쥐", 4:"반쪽이", 5:"개와 고양이", 6:"요술 맷돌"};
 
@@ -420,7 +420,7 @@ function startDeck(cards){
 }
 
 /* ---------- 빈칸 채우기 게임 ---------- */
-const IRREG = { spring:["sprang","sprung"], bite:["bit"] };  // 예문 속 불규칙 변화형
+const IRREG = { spring:["sprang","sprung"], bite:["bit"], steal:["stole"] };  // 예문 속 불규칙 변화형
 let gWrong = false;
 function wordForm(en, ex){
   const stems = [en, ...(IRREG[en]||[])];
