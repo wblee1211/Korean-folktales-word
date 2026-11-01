@@ -351,8 +351,33 @@ const WORDS = [
  ["sink","to go down under water","가라앉다",6,"The boat soon filled up with salt. It grew too heavy and began to sink."],
  ["endlessly","without stopping; again and again forever","끝없이, 계속해서",6,"But the millstone kept spinning, and salt poured out endlessly."],
  ["salty","tasting like salt","짠, 짭짤한",6,"People say the magic millstone still spins on the ocean floor. That is why the sea is salty even today."],
+ // Unit 7 — 토끼의 간 (The Rabbit's Liver, 예문: 책 본문)
+ ["ocean","a very large area of salt water","바다, 대양",7,"Long ago, deep under the ocean, there lived the King of the Sea."],
+ ["rule","to lead and control a country or group","다스리다, 통치하다",7,"The King ruled over the ocean."],
+ ["creature","any living animal or person","생물, 동물",7,"All the sea creatures obeyed him."],
+ ["obey","to do what someone tells them to do","(말을) 따르다, 순종하다",7,"All the sea creatures obeyed him."],
+ ["awful","very bad or terrible","아주 나쁜, 끔찍한",7,"One day, something awful happened to the King."],
+ ["ill","feeling sick and not healthy","아픈, 병든",7,"He became terribly ill."],
+ ["cure","to make a sick person healthy again","치료하다, 낫게 하다",7,"Many doctors came to help, but none could cure the King's illness."],
+ ["examine","to look at someone or something very carefully","진찰하다, 살펴보다",7,"After examining the King carefully, he said, “There is only one way to cure your illness.”"],
+ ["desperate","feeling that someone needs help very much and has no hope","절박한, 간절한",7,"The King looked at him with desperate eyes."],
+ ["immediately","right away; without waiting","즉시, 바로",7,"The King immediately called the Turtle."],
+ ["ashore","onto the land from the water","물가로, 뭍으로",7,"Go ashore and bring me a rabbit."],
+ ["Your Majesty","a special way to call a king or queen","폐하, 임금님",7,"The Turtle answered, “Yes, Your Majesty.”"],
+ ["journey","a long trip from one place to another","여행, 여정",7,"The Turtle set off on a long journey."],
+ ["struggle","to try very hard to do something difficult","애쓰다, 분투하다",7,"He swam through the deep sea and struggled up the river."],
+ ["approach","to move closer to someone or something","다가가다",7,"The Turtle carefully approached and greeted him politely."],
+ ["greet","to say hello or welcome someone","인사하다, 맞이하다",7,"The Turtle carefully approached and greeted him politely."],
+ ["politely","in a kind and nice way","공손하게, 예의 바르게",7,"The Turtle carefully approached and greeted him politely."],
+ ["regret","to feel sad about something you did","후회하다",7,"Of course. You will not regret coming."],
+ ["firmly","in a strong and serious way","단호하게, 굳게",7,"The King spoke firmly, “Yes. I must eat it to cure my illness.”"],
+ ["leap","to jump high or far","높이 뛰어오르다",7,"As soon as they reached the surface, the Rabbit leapt and landed on the ground."],
+ ["naive","believing things too easily without thinking carefully","잘 속는, 순진한",7,"Oh, Turtle, you are naive. What kind of animal would leave its liver somewhere else?"],
+ ["realize","to suddenly understand or know something","깨닫다, 알아차리다",7,"Now, the Turtle realized he had been tricked."],
+ ["regards","friendly greetings sent to someone","안부 (인사)",7,"I will not be coming back. Send my regards to the King!"],
+ ["helpless","not able to do anything about a situation","어찌할 수 없는, 속수무책인",7,"The Rabbit dashed into the forest. The Turtle sat there, helpless."],
 ];
-const UNITS = {1:"청개구리 이야기", 2:"빨간 부채 파란 부채", 3:"손톱 먹은 쥐", 4:"반쪽이", 5:"개와 고양이", 6:"요술 맷돌"};
+const UNITS = {1:"청개구리 이야기", 2:"빨간 부채 파란 부채", 3:"손톱 먹은 쥐", 4:"반쪽이", 5:"개와 고양이", 6:"요술 맷돌", 7:"토끼의 간"};
 
 const $ = id => document.getElementById(id);
 const store = {
@@ -420,7 +445,7 @@ function startDeck(cards){
 }
 
 /* ---------- 빈칸 채우기 게임 ---------- */
-const IRREG = { spring:["sprang","sprung"], bite:["bit"], steal:["stole"] };  // 예문 속 불규칙 변화형
+const IRREG = { spring:["sprang","sprung"], bite:["bit"], steal:["stole"], leap:["leapt"], examine:["examining"] };  // 예문 속 불규칙 변화형
 let gWrong = false;
 function wordForm(en, ex){
   const stems = [en, ...(IRREG[en]||[])];
